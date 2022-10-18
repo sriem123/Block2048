@@ -1,0 +1,263 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Artificial Intelligence for Block-2048
+
+Students: Work in this file for the Final Project
+
+author: CSC 1300 Professors and  Sonith Riem      
+last updated: April 19 2022
+Description: This is a program of the 2048 game. Adjacent blocks (number ranging from 2-16)with the same value adds 
+together until one of the sum is 2048. 
+"""
+
+import random
+
+# Part 1: Helper Functions ###################################################
+#This function determines with the column of the matrix is full. 
+
+def is_full(board, col):
+    count_true = 0
+    count_false = 0
+
+    for i, row in enumerate(board):
+        for j, num in enumerate(row):
+            if j == col:
+                if board[i][j] == 0:
+                    count_true += 1
+                   
+                else:
+                    count_false += 1
+    if count_true >= 1:
+        return False
+    else:
+        return True
+ 
+    pass
+
+#This function returns a random column that is not full. 
+def random_column(board):
+    new_list = []
+    
+    for col in range(len(board[0])):
+        if not is_full(board,col):
+            new_list.append(col)
+            
+    random_col = random.randint(0,len(new_list) - 1)
+    return new_list[random_col]
+    pass
+
+#This function returns the value of the top of the each column. 
+
+def top_block(board, col):
+    count_zero = 0
+    count_number = 0
+    my_list= []
+    for i, row in enumerate(board):
+        for j, num in enumerate(row):
+            if j == col:
+                if board[i][j] == 0:
+                    count_zero += 1
+                   
+                else:
+                    count_number += 1
+    entire_col = count_zero + count_number
+    if count_number == entire_col:
+        return -1
+    if count_zero == entire_col:
+        return 0
+    else:
+        for i, row in enumerate(board):
+            for j, num in enumerate(row):
+                if j == col:
+                    my_list.append(board[i][j])
+                    new_list = my_list
+                    if new_list[i] !=0:
+                        return new_list[i]
+    pass
+
+
+#This function returns the top most nonzero value of the column. 
+def all_top_blocks(board):
+
+    length_board = len(board)
+    col_num = len(board[0])
+    top_block = []
+    for col in range(col_num):
+        for row in range(length_board):
+            
+            # if column is empty append 0
+            if board[length_board - 1][col] == 0:
+                top_block.append(0)
+                break
+            # if column is full append -1
+            if board[0][col] != 0:
+                top_block.append(-1)
+                break
+            
+            # if column is not full append the top nonzero number 
+            if board[row][col] != 0:
+                top_block.append(board[row][col])
+                break
+             
+    return top_block
+
+    pass
+
+#This function finds the shortest column in the matrix. 
+def find_shortest(board):
+
+    shortest_line = 0
+    
+    save_column = 0
+    
+    length_board = len(board)
+    
+    for col in range(len(board[0])):
+        
+        count_zero = 0
+        
+        for row in range(len(board)):
+            
+            if board[row][col] == 0:
+                count_zero = count_zero + 1
+                
+
+    
+        if length_board == count_zero :
+           
+            return col
+                
+        if shortest_line < count_zero:
+            save_column = col
+           
+            shortest_line = count_zero
+            
+    return save_column
+
+    pass
+
+#This function determine if the column is increasing or not. 
+def is_increasing(board, col):
+    
+    row_num = len(board)
+    
+    for row in range(1, row_num):
+        
+        if board[row][col] < board[row - 1][col]:
+            
+            return False
+    return True
+
+    pass
+
+
+
+# Part 2: AI Functions #######################################################
+
+#This function allows the player to play in a non-full 
+#column where the block matches the top most non-zero block. 
+def play_vertical_matcher(block, board):
+    for col in range(0, len(board[0])):
+        my_block = top_block(board, col)
+        if my_block == block:
+            return col
+       
+    next_up = random_column(board)
+    return next_up
+
+
+    pass
+
+# This functions allow the player to play where the block
+#matches the top nonzero block. When there is no matches
+#place the block on top of a block with a value greater than 
+#the moving block. 
+def play_better_vertical_matcher(block, board):
+    for col in range(0, len(board[0])):
+        my_block = top_block(board, col)
+        
+        if my_block == block:
+            return col
+        
+        elif my_block > block:
+            return col
+    up_next = random_column(board)
+    
+    return up_next
+    pass
+
+'''
+This function allow the ai to find a vertical matching block and drop \
+the block in that column. If there is no vertical matching block, 
+then the block will be dropped in a non-full column that has a larger value 
+than the moving block. 
+If there is an an empty column, then the moving block will be \
+dropped there so that it can avoid being on top of two number blocks \
+. It also look for matching block by looking for empty spaces around \
+the block . If there' s non of the above, 
+then it will be dropped in a random non-fullcolumn . 
+'''
+def play_my_awesome_logic(block, next_block, board):
+    
+    for col in range(0, len(board[0])):
+        my_block = top_block(board, col)
+        
+        if my_block == block:
+            return col
+        
+        elif my_block > block:
+            return col
+        
+        elif my_block == 0:
+            if block != 2:
+                if next_block != 2:
+                    return col
+       
+    for i in range(len(board)-1):
+        
+        row = board[i]
+        
+        for j in range(len(row)-1):
+            block1= int(board[i][j])
+            block2 = int(board[i][j+1])
+            block3 = int(board[i+1][j+1])
+            
+            if block1 == block:
+                if block2 == 0:
+                    if block3 > block:
+                        return j+1
+   
+   
+    up_next = random_column(board)
+    return up_next
+
+    pass
+
+
+# Given Functions ##############################################
+
+# play interactively -- this code is complete -- no changes needed
+def play_console_control(block, board):
+    num_cols = len(board[0])
+    col = int(input("Drop " + str(block) + " in which column: "))
+
+    # ask again if given an invalid column
+    while col < 0 or col >= num_cols:
+        col = int(input("Drop " + str(block) + " in which column: "))
+
+    return col
+
+
+# uncomment one line -- this is the strategy used to play the game
+def strategy(block, next_block, board):
+    input()  # uncomment to pause the loop between every board update
+    return play_console_control(block, board)    # interactive
+    return play_vertical_matcher(block, board)
+    #return play_better_vertical_matcher(block, board)
+    #return play_my_awesome_logic(block, next_block, board)
+
+
+if __name__ == "__main__":
+    import block_2048
+    block_2048.main()
